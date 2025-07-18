@@ -1,8 +1,6 @@
-// src/app/VectorVisualization.tsx
-
 'use client';
 
-import React, { useEffect, useMemo } from 'react'; // Removed useState
+import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { Data, PlotMouseEvent, Layout } from "plotly.js";
 

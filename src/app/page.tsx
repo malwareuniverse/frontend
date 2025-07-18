@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useTransition, type SetStateAction } from "react";
 import type {
-  NextApiResponseSuccess,
   NextApiResponseError,
 } from "./api/fastapi-data/route";
 import VectorVisualization, {
@@ -23,7 +22,7 @@ interface ProcessedFastAPIData {
   pacmap_applied: boolean;
   data: number[][];
   metadata: MalwareMetadata[];
-  message?: string;
+  message: string;
 }
 
 interface RawApiResultItem {
@@ -79,7 +78,7 @@ export default function FastAPIDataPage() {
         const response = await fetch(apiUrl.toString());
 
         if (!response.ok) {
-          const errorBody: NextApiResponseError = await response.json();
+          const errorBody: NextApiResponseError = await response.json() as NextApiResponseError;
           throw new Error(
             errorBody.error || `HTTP error! status: ${response.status}`,
           );
@@ -90,7 +89,7 @@ export default function FastAPIDataPage() {
           data?: RawApiResponse;
           error?: string;
           message?: string;
-        } = await response.json();
+        } = await response.json() as never;
 
         if (result.success && result.data) {
           if (!result.data.results || !Array.isArray(result.data.results)) {
@@ -107,18 +106,18 @@ export default function FastAPIDataPage() {
           const processedData: ProcessedFastAPIData = {
             data: embeddings,
             metadata: metadataList,
-            shape: [embeddings.length, embeddings[0]?.length || 0],
+            shape: [embeddings.length, embeddings[0]?.length ?? 0],
             pacmap_applied: result.data.pacmap_applied ?? applyDR,
             message:
-              result.data.message ||
-              result.message ||
+              result.data.message ??
+              result.message ??
               "Data processed and loaded successfully.",
           };
           setFastApiData(processedData);
           setFetchStatusMessage(processedData.message);
         } else {
           setFetchStatusMessage(
-            result.error || "An error occurred fetching data via Next.js API.",
+            result.error ?? "An error occurred fetching data via Next.js API.",
           );
           setIsFetchError(true);
         }
@@ -329,7 +328,7 @@ export default function FastAPIDataPage() {
                   <div>
                     <span className="font-semibold text-gray-700">Family:</span>
                     <span className="ml-2 text-gray-900">
-                      {selectedPoint.metadata.properties.malware_family ||
+                      {selectedPoint.metadata.properties.malware_family ??
                         "N/A"}
                     </span>
                   </div>
