@@ -1,93 +1,151 @@
 // src/app/fastapi-data/page.tsx
-'use client'; // This is a client component because it needs state and event handlers
+'use client';
 
-import {useEffect, useState, useTransition} from 'react';
-// Import types for the expected response from our *Next.js* API route
-import type { NextApiResponseSuccess, NextApiResponseError } from './api/fastapi-data/route';
+import { useEffect, useState, useTransition, type SetStateAction } from "react";
+import type {
+  NextApiResponseSuccess,
+  NextApiResponseError,
+} from "./api/fastapi-data/route";
+import VectorVisualization, {
+  type SelectedPointInfo,
+} from "~/app/VectorVisualization";
 
-// Import the visualization component (now expects number[][])
-import VectorVisualization from '~/app/VectorVisualization';
-
-
-// Define the structure of the data we expect to store in state
-interface FetchedFastAPIData {
-    shape: [number, number]; // e.g., [1024, 1024] or [1024, 3]
-    pacmap_applied: boolean;
-    data: number[][]; // The actual array of points
-    message?: string;
+interface MalwareMetadata {
+  properties: {
+    malware_family: string | null;
+  };
+  uuid: string;
+  vector_length: number;
 }
 
-// Removed redundant type definitions here as they are imported from the route
+interface ProcessedFastAPIData {
+  shape: [number, number];
+  pacmap_applied: boolean;
+  data: number[][];
+  metadata: MalwareMetadata[];
+  message?: string;
+}
 
+interface RawApiResultItem {
+  embedding: number[];
+  metadata: MalwareMetadata;
+}
+
+interface RawApiResponse {
+  results: RawApiResultItem[];
+  pacmap_applied?: boolean;
+  message?: string;
+}
 
 export default function FastAPIDataPage() {
-  // State to hold the fetched data from FastAPI
-  const [fastApiData, setFastApiData] = useState<FetchedFastAPIData | null>(null);
-  // State for status/error messages (primarily for the fetch operation)
-  const [fetchStatusMessage, setFetchStatusMessage] = useState<string | null>(null);
+  const [fastApiData, setFastApiData] = useState<ProcessedFastAPIData | null>(
+    null,
+  );
+  const [fetchStatusMessage, setFetchStatusMessage] = useState<string | null>(
+    null,
+  );
   const [isFetchError, setIsFetchError] = useState<boolean>(false);
-
-  // State for input controls for the API call
   const [applyDR, setApplyDR] = useState<boolean>(true);
   const [drMethod, setDrMethod] = useState<string>("pacmap");
+  const [nComponents, setNComponents] = useState<number>(3);
 
-  const [nComponents, setNComponents] = useState<number>(3); // Default to 3 components for 3D visualization
-
+  const [colorMode, setColorMode] = useState<"component" | "family">(
+    "component",
+  );
   const [isPending, startTransition] = useTransition();
 
+  const [selectedPoint, setSelectedPoint] = useState<SelectedPointInfo | null>(
+    null,
+  );
 
-  // --- Fetch Handler ---
+  const handlePointClick = (info: SetStateAction<SelectedPointInfo | null>) => {
+    console.log("Point clicked!", info);
+    setSelectedPoint(info);
+  };
+
   const handleFetchData = () => {
-    setFetchStatusMessage(null); // Clear previous fetch status
+    setFetchStatusMessage(null);
     setIsFetchError(false);
-    setFastApiData(null); // Clear previous data
+    setFastApiData(null);
+    setSelectedPoint(null);
 
     startTransition(async () => {
       setFetchStatusMessage("Fetching data from FastAPI via Next.js API...");
       try {
-        const apiUrl = new URL('/api/fastapi-data', window.location.origin); // Use window.location.origin for local API route
-
-        apiUrl.searchParams.set('apply_dr', String(applyDR));
-        apiUrl.searchParams.set('dr_method', String(drMethod));
-
-        if (nComponents) {
-             apiUrl.searchParams.set('n_components', String(nComponents));
-        }
-
-        console.log(`Calling Next.js API endpoint: ${apiUrl.toString()}`);
-
-        // Make the fetch request to our Next.js API route
+        const apiUrl = new URL("/api/fastapi-data", window.location.origin);
+        apiUrl.searchParams.set("apply_dr", String(applyDR));
+        apiUrl.searchParams.set("dr_method", String(drMethod));
+        apiUrl.searchParams.set("n_components", String(nComponents));
         const response = await fetch(apiUrl.toString());
 
-        // Check if the HTTP response itself was successful
         if (!response.ok) {
-             const errorBody: NextApiResponseError = await response.json();
-             throw new Error(errorBody.error || `HTTP error! status: ${response.status}`);
+          const errorBody: NextApiResponseError = await response.json();
+          throw new Error(
+            errorBody.error || `HTTP error! status: ${response.status}`,
+          );
         }
 
-        const result: NextApiResponseSuccess | NextApiResponseError = await response.json();
+        const result: {
+          success: boolean;
+          data?: RawApiResponse;
+          error?: string;
+          message?: string;
+        } = await response.json();
 
-        if (result.success) {
-          console.log("Successfully fetched data from Next.js API route.");
-          console.log("Received FastAPI Data:", result.data);
-          setFastApiData(result.data); // Set the FastAPI data received via our API route
-          setFetchStatusMessage(result.message || result.data.message || "Data fetched successfully.");
+        if (result.success && result.data) {
+          if (!result.data.results || !Array.isArray(result.data.results)) {
+            throw new Error(
+              "API response is malformed: missing 'results' array.",
+            );
+          }
+          const embeddings: number[][] = [];
+          const metadataList: MalwareMetadata[] = [];
+          for (const item of result.data.results) {
+            embeddings.push(item.embedding);
+            metadataList.push(item.metadata);
+          }
+          const processedData: ProcessedFastAPIData = {
+            data: embeddings,
+            metadata: metadataList,
+            shape: [embeddings.length, embeddings[0]?.length || 0],
+            pacmap_applied: result.data.pacmap_applied ?? applyDR,
+            message:
+              result.data.message ||
+              result.message ||
+              "Data processed and loaded successfully.",
+          };
+          setFastApiData(processedData);
+          setFetchStatusMessage(processedData.message);
         } else {
-          // Handle cases where our API route returns success: false
-          setFetchStatusMessage(result.error || "An error occurred fetching data via Next.js API.");
+          setFetchStatusMessage(
+            result.error || "An error occurred fetching data via Next.js API.",
+          );
           setIsFetchError(true);
         }
       } catch (error) {
-          console.error("Error in client fetch:", error);
-          setFetchStatusMessage(`Failed to fetch data: ${error instanceof Error ? error.message : String(error)}`);
-          setIsFetchError(true);
+        console.error("Error in client fetch:", error);
+        setFetchStatusMessage(
+          `Failed to fetch data: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        setIsFetchError(true);
       }
     });
   };
+
+  // MODIFICATION: Added useEffect to fetch data on initial component mount.
+  // The empty dependency array [] ensures this effect runs only once.
   useEffect(() => {
+    handleFetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // This effect refetches data if the user changes the number of components
+  useEffect(() => {
+    // Only refetch if data has already been loaded once to avoid double-fetching on mount
     if (fastApiData && !isPending) {
       handleFetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nComponents]);
 
   return (
@@ -98,7 +156,8 @@ export default function FastAPIDataPage() {
             FastAPI Data Fetcher & Visualizer
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Fetch random data from your FastAPI application and visualize it
+            Fetch malware vectors and their metadata from your FastAPI
+            application and visualize the results.
           </p>
         </header>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -124,67 +183,66 @@ export default function FastAPIDataPage() {
                   Apply Dimensionality Reduction
                 </label>
               </div>
-              <div className="flex items-center">
-              <input
-                id="apply_pacmap"
-                type="radio"
-                name="dr_method"
-                value="pacmap"
-                checked={drMethod === "pacmap"}
-                onChange={(e) => setDrMethod(e.target.value)}
-                disabled={isPending}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <label
-                htmlFor="apply_pacmap"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Apply PaCMAP (Recommended for high-dim data viz)
-              </label>
-
-              <input
-                id="apply_umap"
-                type="radio"
-                name="dr_method"
-                value="umap"
-                checked={drMethod === "umap"}
-                onChange={(e) => setDrMethod(e.target.value)}
-                disabled={isPending}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ml-4"
-              />
-              <label
-                htmlFor="apply_umap"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Apply UMAP
-              </label>
-                             <input
-                id="apply_trimap"
-                type="radio"
-                name="dr_method"
-                value="trimap"
-                checked={drMethod === "trimap"}
-                onChange={(e) => setDrMethod(e.target.value)}
-                disabled={isPending}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ml-4"
-              />
-              <label
-                htmlFor="apply_trimap"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Apply TriMAP (Global Structure)
-              </label>
-
-            </div>
-
-              {/* pacmap_components input */}
+              <div className="flex flex-col items-start space-y-2">
+                <div className="flex items-center">
+                  <input
+                    id="apply_pacmap"
+                    type="radio"
+                    name="dr_method"
+                    value="pacmap"
+                    checked={drMethod === "pacmap"}
+                    onChange={(e) => setDrMethod(e.target.value)}
+                    disabled={isPending || !applyDR}
+                    className="h-4 w-4"
+                  />
+                  <label
+                    htmlFor="apply_pacmap"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
+                    PaCMAP (Balanced)
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="apply_umap"
+                    type="radio"
+                    name="dr_method"
+                    value="umap"
+                    checked={drMethod === "umap"}
+                    onChange={(e) => setDrMethod(e.target.value)}
+                    disabled={isPending || !applyDR}
+                    className="h-4 w-4"
+                  />
+                  <label
+                    htmlFor="apply_umap"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
+                    UMAP (Local Structure)
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="apply_trimap"
+                    type="radio"
+                    name="dr_method"
+                    value="trimap"
+                    checked={drMethod === "trimap"}
+                    onChange={(e) => setDrMethod(e.target.value)}
+                    disabled={isPending || !applyDR}
+                    className="h-4 w-4"
+                  />
+                  <label
+                    htmlFor="apply_trimap"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
+                    TriMAP (Global Structure)
+                  </label>
+                </div>
+              </div>
               {applyDR && (
                 <div className="mt-3">
-                  <label
-                    htmlFor="pacmap_components"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Dimension Reduction
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Visualization Dimensions
                   </label>
                   <div className="flex space-x-4">
                     <div className="flex items-center">
@@ -196,7 +254,7 @@ export default function FastAPIDataPage() {
                         checked={nComponents === 2}
                         onChange={() => setNComponents(2)}
                         disabled={isPending}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4"
                       />
                       <label
                         htmlFor="pacmap_components_2"
@@ -214,7 +272,7 @@ export default function FastAPIDataPage() {
                         checked={nComponents === 3}
                         onChange={() => setNComponents(3)}
                         disabled={isPending}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4"
                       />
                       <label
                         htmlFor="pacmap_components_3"
@@ -224,12 +282,8 @@ export default function FastAPIDataPage() {
                       </label>
                     </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Select visualization dimensions
-                  </p>
                 </div>
               )}
-
               <button
                 onClick={handleFetchData}
                 disabled={isPending}
@@ -237,12 +291,14 @@ export default function FastAPIDataPage() {
               >
                 {isPending ? (
                   <>
+                    {" "}
                     <svg
                       className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
+                      {" "}
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -250,28 +306,74 @@ export default function FastAPIDataPage() {
                         r="10"
                         stroke="currentColor"
                         strokeWidth="4"
-                      ></circle>
+                      ></circle>{" "}
                       <path
                         className="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Loading...
+                      ></path>{" "}
+                    </svg>{" "}
+                    Loading...{" "}
                   </>
                 ) : (
                   "Fetch Data"
                 )}
               </button>
             </div>
+            <div className="space-y-4 rounded-lg bg-white p-6 shadow">
+              <h2 className="text-lg font-medium text-gray-900">
+                Selected Point Details
+              </h2>
+              {selectedPoint ? (
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="font-semibold text-gray-700">Family:</span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedPoint.metadata.properties.malware_family ||
+                        "N/A"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">UUID:</span>
+                    <span className="ml-2 font-mono text-xs break-all text-gray-600">
+                      {selectedPoint.metadata.uuid}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">
+                      Vec Length:
+                    </span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedPoint.metadata.vector_length}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Coords:</span>
+                    <span className="ml-2 text-gray-900">
+                      [
+                      {selectedPoint.coordinates
+                        .map((c) => c.toFixed(3))
+                        .join(", ")}
+                      ]
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center rounded-md border-2 border-dashed border-gray-200 py-6 text-center text-sm text-gray-500">
+                  <span>Click on a point to see details.</span>
+                </div>
+              )}
+            </div>
 
-            {/* Status/Error Display (for the fetch operation) */}
             {fetchStatusMessage && (
               <div
                 className={`rounded-md p-4 ${isFetchError ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}
               >
+                {" "}
                 <div className="flex">
+                  {" "}
                   <div className="flex-shrink-0">
+                    {" "}
                     {isFetchError ? (
                       <svg
                         className="h-5 w-5 text-red-400"
@@ -279,11 +381,12 @@ export default function FastAPIDataPage() {
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
+                        {" "}
                         <path
                           fillRule="evenodd"
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                           clipRule="evenodd"
-                        />
+                        />{" "}
                       </svg>
                     ) : (
                       <svg
@@ -292,39 +395,99 @@ export default function FastAPIDataPage() {
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
+                        {" "}
                         <path
                           fillRule="evenodd"
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                           clipRule="evenodd"
-                        />
+                        />{" "}
                       </svg>
-                    )}
-                  </div>
+                    )}{" "}
+                  </div>{" "}
                   <div className="ml-3">
-                    <p className="text-sm font-medium">{fetchStatusMessage}</p>
-                  </div>
-                </div>
+                    {" "}
+                    <p className="text-sm font-medium">
+                      {fetchStatusMessage}
+                    </p>{" "}
+                  </div>{" "}
+                </div>{" "}
               </div>
             )}
           </div>
           {/* Right Column: Visualization and Results Display */}
           <div className="lg:col-span-2">
-            {/* Vector Visualization */}
-            <div className="mt-0 rounded-lg bg-white p-6 shadow">
-              <h2 className="mb-4 text-lg font-medium text-gray-900">
-                Data Visualization
-              </h2>
-              <div className="h-96 w-full">
-                <VectorVisualization
-                  data={fastApiData?.data || []} // Pass the raw data array from FastAPI
-                  isLoading={
-                    (isPending && fetchStatusMessage?.startsWith("Fetching")) ||
-                    false
-                  } // Pass the relevant loading state
-                />
+            <div className="rounded-lg bg-white p-6 shadow">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Data Visualization
+                </h2>
+                <div className="flex items-center space-x-4 text-sm">
+                  <span className="font-medium text-gray-700">Color by:</span>
+                  <div className="flex items-center">
+                    <input
+                      id="color_component"
+                      type="radio"
+                      name="color_mode"
+                      value="component"
+                      checked={colorMode === "component"}
+                      onChange={() => setColorMode("component")}
+                      disabled={isPending || !fastApiData}
+                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                    <label
+                      htmlFor="color_component"
+                      className="ml-2 block text-gray-900"
+                    >
+                      Component
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="color_family"
+                      type="radio"
+                      name="color_mode"
+                      value="family"
+                      checked={colorMode === "family"}
+                      onChange={() => setColorMode("family")}
+                      disabled={isPending || !fastApiData}
+                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                    <label
+                      htmlFor="color_family"
+                      className="ml-2 block text-gray-900"
+                    >
+                      Family
+                    </label>
+                  </div>
+                </div>
+              </div>
+           <div className="flex h-96 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
+                {isPending && !fastApiData ? (
+                  <div className="text-center">
+                    <svg className="mx-auto h-8 w-8 animate-spin text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="mt-2 text-sm text-gray-500">Loading visualization...</p>
+                  </div>
+                ) : fastApiData && fastApiData.data.length > 0 ? (
+                  <div className="h-full w-full">
+                    <VectorVisualization
+                      data={fastApiData.data}
+                      metadata={fastApiData.metadata}
+                      isLoading={false}
+                      colorBy={colorMode}
+                      onPointClick={handlePointClick}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center text-sm text-gray-500">
+                    <p>No data to visualize.</p>
+                  </div>
+                )}
               </div>
             </div>
-            {/* Results Display (Details from FastAPI response) */}
+            {/* Results Display */}
             <div className="mt-6 overflow-hidden rounded-lg bg-white shadow">
               <div className="border-b border-gray-200 px-6 py-4">
                 <h2 className="text-lg font-medium text-gray-900">
@@ -332,7 +495,6 @@ export default function FastAPIDataPage() {
                 </h2>
               </div>
               <div className="p-6">
-                {/* Only show details if data has been successfully fetched and is not pending */}
                 {!isPending && fastApiData ? (
                   <div className="space-y-4">
                     <p>
@@ -345,19 +507,25 @@ export default function FastAPIDataPage() {
                     <p>
                       <strong>Message:</strong> {fastApiData.message}
                     </p>
-
-                    {/* Display a snippet of the data (e.g., first 5 rows) */}
                     <div className="mt-4">
                       <h3 className="text-md mb-2 font-medium text-gray-900">
-                        Data Snippet (First 5 rows):
+                        Data & Metadata Snippet (First 5 rows):
                       </h3>
                       {fastApiData.data.slice(0, 5).map((row, rowIndex) => (
                         <div
-                          key={rowIndex}
+                          key={fastApiData.metadata[rowIndex]?.uuid ?? rowIndex}
                           className="font-mono text-sm break-all text-gray-700"
                         >
-                          Row {rowIndex + 1}: [{row.slice(0, 10).join(", ")}
-                          {row.length > 10 ? ", ..." : ""}]
+                          Row {rowIndex + 1}:
+                          <span className="ml-2 text-blue-700">
+                            Family:{" "}
+                            {fastApiData.metadata[rowIndex]?.properties
+                              .malware_family ?? "N/A"}
+                          </span>
+                          <span className="ml-2 text-gray-500">
+                            Coords: [{row.slice(0, 3).join(", ")}
+                            {row.length > 3 ? ", ..." : ""}]
+                          </span>
                         </div>
                       ))}
                       {fastApiData.data.length > 5 && (
@@ -365,22 +533,18 @@ export default function FastAPIDataPage() {
                           ... and {fastApiData.data.length - 5} more rows.
                         </p>
                       )}
-                      {fastApiData.data.length === 0 && (
-                        <p className="mt-2 text-sm text-gray-600">
-                          No data rows returned.
-                        </p>
-                      )}
                     </div>
                   </div>
                 ) : (
                   <div className="text-center text-gray-500">
-                    {isPending && fetchStatusMessage?.startsWith("Fetching") ? (
+                    {isPending ? (
                       <svg
                         className="mx-auto h-8 w-8 animate-spin text-blue-500"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
+                        {" "}
                         <circle
                           className="opacity-25"
                           cx="12"
@@ -388,28 +552,23 @@ export default function FastAPIDataPage() {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        ></circle>{" "}
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        ></path>{" "}
                       </svg>
                     ) : (
                       "Fetch data to see response details here."
                     )}
                   </div>
                 )}
-              </div>{" "}
-              {/* End p-6 */}
-            </div>{" "}
-            {/* End bg-white */}
-          </div>{" "}
-          {/* End lg:col-span-2 */}
-        </div>{" "}
-        {/* End grid */}
-      </div>{" "}
-      {/* End max-w-7xl */}
-    </div> // End min-h-screen
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
