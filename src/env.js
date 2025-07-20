@@ -8,8 +8,6 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
-    WEAVIATE_HOST: z.string(),
-    WEAVIATE_API_KEY: z.string(),
     COLLECTION: z.string(),
     FASTAPI_URL: z.string().url(),
   },
@@ -29,8 +27,6 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    WEAVIATE_HOST: process.env.WEAVIATE_HOST,
-    WEAVIATE_API_KEY: process.env.WEAVIATE_API_KEY,
     COLLECTION: process.env.COLLECTION,
     FASTAPI_URL: process.env.FASTAPI_URL,
   },
