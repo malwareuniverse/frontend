@@ -1,16 +1,10 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { env } from '~/env';
-
-interface FastAPIResponse {
-    shape: [number, number];
-    pacmap_applied: boolean;
-    data: number[][];
-    message?: string;
-}
+import type {RawApiResponse} from "~/interfaces/malware";
 
 export interface NextApiResponseSuccess {
     success: true;
-    data: FastAPIResponse;
+    data: RawApiResponse;
     message?: string;
 }
 
@@ -41,11 +35,11 @@ export async function GET(request: NextRequest) {
             console.error(`FastAPI fetch failed with status ${fastapiResponse.status}: ${errorBody}`);
              return NextResponse.json(
                  { success: false, error: `Failed to fetch from FastAPI: HTTP status ${fastapiResponse.status}` } as NextApiResponseError,
-                 { status: 500 } // Indicate an internal error talking to the external API
+                 { status: 500 }
              );
         }
 
-        const fastapiData: FastAPIResponse = await fastapiResponse.json() as FastAPIResponse;
+        const fastapiData: RawApiResponse = await fastapiResponse.json() as RawApiResponse;
 
         console.log("Successfully fetched data from FastAPI.");
         console.log("FastAPI Data Shape:", fastapiData.shape);

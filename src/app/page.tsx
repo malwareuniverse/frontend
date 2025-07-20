@@ -1,7 +1,6 @@
-// src/app/fastapi-data/page.tsx
 'use client';
 
-import { useEffect, useState, useTransition, type SetStateAction } from "react";
+import { useEffect, useState, useTransition, type SetStateAction, useCallback } from "react";
 import type {
   NextApiResponseError,
 } from "./api/fastapi-data/route";
@@ -9,32 +8,7 @@ import VectorVisualization, {
   type SelectedPointInfo,
 } from "~/app/VectorVisualization";
 
-interface MalwareMetadata {
-  properties: {
-    malware_family: string | null;
-  };
-  uuid: string;
-  vector_length: number;
-}
-
-interface ProcessedFastAPIData {
-  shape: [number, number];
-  pacmap_applied: boolean;
-  data: number[][];
-  metadata: MalwareMetadata[];
-  message: string;
-}
-
-interface RawApiResultItem {
-  embedding: number[];
-  metadata: MalwareMetadata;
-}
-
-interface RawApiResponse {
-  results: RawApiResultItem[];
-  pacmap_applied?: boolean;
-  message?: string;
-}
+import type {MalwareMetadata, ProcessedFastAPIData, RawApiResponse} from "~/interfaces/malware";
 
 export default function FastAPIDataPage() {
   const [fastApiData, setFastApiData] = useState<ProcessedFastAPIData | null>(
@@ -48,7 +22,7 @@ export default function FastAPIDataPage() {
   const [drMethod, setDrMethod] = useState<string>("pacmap");
   const [nComponents, setNComponents] = useState<number>(3);
 
-  const [colorMode, setColorMode] = useState<"component" | "family">(
+  const [colorMode, setColorMode] = useState<"component" | "family" | "cluster">(
     "component",
   );
   const [isPending, startTransition] = useTransition();
@@ -62,7 +36,7 @@ export default function FastAPIDataPage() {
     setSelectedPoint(info);
   };
 
-  const handleFetchData = () => {
+  const handleFetchData = useCallback(() => {
     setFetchStatusMessage(null);
     setIsFetchError(false);
     setFastApiData(null);
@@ -129,23 +103,17 @@ export default function FastAPIDataPage() {
         setIsFetchError(true);
       }
     });
-  };
+  }, [applyDR, drMethod, nComponents]);
 
-  // MODIFICATION: Added useEffect to fetch data on initial component mount.
-  // The empty dependency array [] ensures this effect runs only once.
   useEffect(() => {
     handleFetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // This effect runs on mount and whenever handleFetchData is recreated.
+    // Because handleFetchData is wrapped in useCallback, it is only recreated
+    // when its dependencies (the data fetching parameters) change.
+    // This correctly triggers a data fetch on mount and when options are changed.
+  }, [handleFetchData]);
 
-  // This effect refetches data if the user changes the number of components
-  useEffect(() => {
-    // Only refetch if data has already been loaded once to avoid double-fetching on mount
-    if (fastApiData && !isPending) {
-      handleFetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nComponents]);
+  // The second useEffect hook was removed as it was redundant and caused an infinite loop.
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -319,29 +287,66 @@ export default function FastAPIDataPage() {
                 )}
               </button>
             </div>
+            {/* UPDATE 2: Replaced the entire "Selected Point Details" card with a more detailed one. */}
             <div className="space-y-4 rounded-lg bg-white p-6 shadow">
               <h2 className="text-lg font-medium text-gray-900">
                 Selected Point Details
               </h2>
               {selectedPoint ? (
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2.5 text-sm max-h-[28rem] overflow-y-auto pr-2">
                   <div>
                     <span className="font-semibold text-gray-700">Family:</span>
-                    <span className="ml-2 text-gray-900">
-                      {selectedPoint.metadata.properties.malware_family ??
-                        "N/A"}
+                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                      {selectedPoint.metadata.properties.malware_family ?? "N/A"}
+                    </span>
+                  </div>
+                   <div>
+                    <span className="font-semibold text-gray-700">Cluster:</span>
+                    <span className="ml-2 rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-800">
+                      {selectedPoint.metadata.cluster_label ?? "N/A"}
                     </span>
                   </div>
                   <div>
-                    <span className="font-semibold text-gray-700">UUID:</span>
+                    <span className="font-semibold text-gray-700">File Name:</span>
                     <span className="ml-2 font-mono text-xs break-all text-gray-600">
+                      {selectedPoint.metadata.properties.file_name ?? "N/A"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">SHA256:</span>
+                    <span className="ml-2 font-mono text-xs break-all text-gray-600">
+                      {selectedPoint.metadata.properties.sha256_hash ?? "N/A"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">File Type:</span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedPoint.metadata.properties.file_type ?? "N/A"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">File Size:</span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedPoint.metadata.properties.file_size
+                        ? `${selectedPoint.metadata.properties.file_size.toLocaleString()} bytes`
+                        : "N/A"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Reporter:</span>
+                    <span className="ml-2 text-gray-900">
+                      {selectedPoint.metadata.properties.reporter ?? "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="!mt-4 border-t border-gray-200 pt-3">
+                    <span className="font-semibold text-gray-700">UUID:</span>
+                    <span className="ml-2 block font-mono text-xs break-all text-gray-600">
                       {selectedPoint.metadata.uuid}
                     </span>
                   </div>
                   <div>
-                    <span className="font-semibold text-gray-700">
-                      Vec Length:
-                    </span>
+                    <span className="font-semibold text-gray-700">Vec Length:</span>
                     <span className="ml-2 text-gray-900">
                       {selectedPoint.metadata.vector_length}
                     </span>
@@ -349,11 +354,7 @@ export default function FastAPIDataPage() {
                   <div>
                     <span className="font-semibold text-gray-700">Coords:</span>
                     <span className="ml-2 text-gray-900">
-                      [
-                      {selectedPoint.coordinates
-                        .map((c) => c.toFixed(3))
-                        .join(", ")}
-                      ]
+                      [{selectedPoint.coordinates.map((c) => c.toFixed(3)).join(", ")}]
                     </span>
                   </div>
                 </div>
@@ -449,13 +450,32 @@ export default function FastAPIDataPage() {
                       checked={colorMode === "family"}
                       onChange={() => setColorMode("family")}
                       disabled={isPending || !fastApiData}
-                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                      className="h-4 w-4 border--300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                     />
                     <label
                       htmlFor="color_family"
                       className="ml-2 block text-gray-900"
                     >
                       Family
+                    </label>
+                  </div>
+                  {/* CHANGE 2: Added the 'Cluster' radio button. */}
+                  <div className="flex items-center">
+                    <input
+                      id="color_cluster"
+                      type="radio"
+                      name="color_mode"
+                      value="cluster"
+                      checked={colorMode === "cluster"}
+                      onChange={() => setColorMode("cluster")}
+                      disabled={isPending || !fastApiData}
+                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                    <label
+                      htmlFor="color_cluster"
+                      className="ml-2 block text-gray-900"
+                    >
+                      Cluster
                     </label>
                   </div>
                 </div>

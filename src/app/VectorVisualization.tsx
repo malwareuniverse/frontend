@@ -3,19 +3,12 @@
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { Data, PlotMouseEvent, Layout } from "plotly.js";
+import type {MalwareMetadata} from "~/interfaces/malware";
 
 const Plot = dynamic(
   () => import('react-plotly.js'),
   { ssr: false }
 );
-
-interface MalwareMetadata {
-    properties: {
-        malware_family: string | null;
-    };
-    uuid: string;
-    vector_length: number;
-}
 
 export interface SelectedPointInfo {
     metadata: MalwareMetadata;
@@ -26,7 +19,7 @@ interface VectorVisualizationProps {
   data: number[][];
   metadata: MalwareMetadata[];
   isLoading: boolean;
-  colorBy: 'component' | 'family';
+  colorBy: 'component' | 'family' | 'cluster';
   onPointClick: (info: SelectedPointInfo | null) => void;
 }
 
@@ -36,6 +29,11 @@ function stringToColor(str: string) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     const hue = hash % 360;
+    return `hsl(${hue}, 70%, 50%)`;
+}
+
+function getDistinctColor(index: number) {
+    const hue = (index * 137.508) % 360;
     const saturation = 70;
     const lightness = 50;
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
@@ -50,17 +48,11 @@ export default function VectorVisualization({ data, metadata, isLoading, colorBy
     return 0;
   }, [data]);
 
-  const plotKey = useMemo(() => {
-    if (!data || data.length === 0) return 'no-data';
-    return `plot-${dimension}-${colorBy}-${data.length}`;
-  }, [dimension, colorBy, data]);
-
   const plotlyData = useMemo(() => {
-    if (!data || data.length === 0 || !metadata || data.length !== metadata.length || dimension < 2 || dimension > 3) {
-      return null;
-    }
-    console.log(colorBy)
+    if (!data || data.length === 0 || !metadata || data.length !== metadata.length || dimension < 2 || dimension > 3) return null
+
     if (colorBy === 'component') {
+        // ... (no changes here)
         const xCoords = data.map(point => point[0]);
         const yCoords = data.map(point => point[1]);
         const zCoords = dimension === 3 ? data.map(point => point[2]) : undefined;
@@ -150,6 +142,73 @@ export default function VectorVisualization({ data, metadata, isLoading, colorBy
         return traces.filter(Boolean) as Data[];
     }
 
+    if (colorBy === 'cluster') {
+        const groupedData: Record<string, { points: number[][]; indices: number[] }> = {};
+        data.forEach((point, index) => {
+            const clusterLabel = metadata[index]?.cluster_label;
+            if (clusterLabel === null || clusterLabel === undefined) return
+            const groupKey = (clusterLabel < 0)
+                ? 'Unclustered'
+                : `Cluster ${clusterLabel}`;
+            groupedData[groupKey] ??= { points: [], indices: [] };
+            groupedData[groupKey].points.push(point);
+            groupedData[groupKey].indices.push(index);
+        });
+
+        const traces = Object.keys(groupedData).map((groupKey: string) => {
+            const group = groupedData[groupKey];
+            if (!group) return null;
+            const xCoords = group.points.map(p => p[0]);
+            const yCoords = group.points.map(p => p[1]);
+            const zCoords = dimension === 3 ? group.points.map(p => p[2]) : undefined;
+            const hoverTexts = group.indices.map(originalIndex => {
+                const point = data[originalIndex];
+                const meta = metadata[originalIndex];
+                if (!point || !meta) return undefined;
+
+                const cluster = meta.cluster_label ?? 'N/A';
+                const family = meta.properties.malware_family ?? 'N/A';
+                let coordsText = `[${point[0]?.toFixed(2)}, ${point[1]?.toFixed(2)}`;
+                if (dimension === 3 && point[2] !== undefined) {
+                    coordsText += `, ${point[2]?.toFixed(2)}`;
+                }
+                coordsText += ']';
+                return `Cluster: <b>${cluster}</b><br>Family: ${family}<br>Coords: ${coordsText}`;
+            });
+
+            let color: string;
+            if (groupKey === 'Unclustered') {
+                color = '#cccccc';
+            } else {
+                const clusterIndex = parseInt(groupKey.replace('Cluster ', ''), 10);
+                color = getDistinctColor(clusterIndex);
+            }
+
+            return {
+                x: xCoords,
+                y: yCoords,
+                z: zCoords,
+                name: groupKey,
+                text: hoverTexts,
+                customdata: group.indices,
+                mode: 'markers',
+                type: dimension === 3 ? 'scatter3d' : 'scattergl',
+                marker: { color: color, size: dimension === 3 ? 4 : 6, opacity: 0.8 },
+                hoverinfo: 'text',
+                hoverlabel: { bgcolor: 'white', font: { size: 10 } },
+            };
+        });
+        traces.sort((a, b) => {
+            if (!a || !b) return 0;
+            if (a.name === 'Unclustered') return 1;
+            if (b.name === 'Unclustered') return -1;
+            const numA = parseInt(a.name.replace('Cluster ', ''), 10);
+            const numB = parseInt(b.name.replace('Cluster ', ''), 10);
+            return numA - numB;
+        });
+        return traces.filter(Boolean) as Data[];
+    }
+
     return null;
   }, [data, dimension, metadata, colorBy]);
 
@@ -172,7 +231,7 @@ export default function VectorVisualization({ data, metadata, isLoading, colorBy
       plot_bgcolor: '#f8f9fa',
       font: { family: 'sans-serif', color: '#343a40' },
       hovermode: 'closest',
-      showlegend: colorBy === 'family',
+      showlegend: colorBy !== 'component',
       legend: {
         x: 1, y: 1, xanchor: 'right', yanchor: 'top',
         bgcolor: 'rgba(255, 255, 255, 0.9)', bordercolor: '#dee2e6',
@@ -247,7 +306,6 @@ export default function VectorVisualization({ data, metadata, isLoading, colorBy
        <div className="flex-grow w-full">
         {plotlyData && (
           <Plot
-            key={plotKey}
             data={plotlyData}
             onClick={handleClick}
             layout={layout}
