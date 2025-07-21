@@ -12,6 +12,7 @@ import SelectedPointDetails from "./components/SelectedPointDetails";
 import StatusAlert from "./components/StatusAlert";
 import VisualizationPanel from "./components/VisualizationPanel";
 import type { SelectedPointInfo } from "~/app/components/VectorVisualization/types";
+import { ArrowsUpFromLine, ArrowDownFromLine } from "lucide-react";
 
 export default function FastAPIDataPage() {
   const [applyDR, setApplyDR] = useState<boolean>(true);
@@ -23,6 +24,8 @@ export default function FastAPIDataPage() {
   const [selectedPoint, setSelectedPoint] = useState<SelectedPointInfo | null>(
     null,
   );
+
+  const [isFullWidth, setIsFullWidth] = useState(false);
 
   const {
     data: fastApiData,
@@ -60,6 +63,27 @@ export default function FastAPIDataPage() {
     }
   };
 
+  const toggleFullWidth = () => {
+    setIsFullWidth((prev) => !prev);
+  };
+
+  const ControlsSidebar = (
+    <>
+      <FetchControls
+        applyDR={applyDR}
+        setApplyDR={setApplyDR}
+        drMethod={drMethod}
+        setDrMethod={setDrMethod}
+        nComponents={nComponents}
+        setNComponents={setNComponents}
+        isPending={isPending}
+        onFetch={handleFetchData}
+      />
+      <SelectedPointDetails selectedPoint={selectedPoint} />
+      <StatusAlert message={statusMessage} isError={isError} />
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="relative isolate overflow-hidden bg-gradient-to-b from-indigo-100/20 via-white to-white">
@@ -95,30 +119,46 @@ export default function FastAPIDataPage() {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <main className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-1">
-            <FetchControls
-              applyDR={applyDR}
-              setApplyDR={setApplyDR}
-              drMethod={drMethod}
-              setDrMethod={setDrMethod}
-              nComponents={nComponents}
-              setNComponents={setNComponents}
-              isPending={isPending}
-              onFetch={handleFetchData}
-            />
-            <SelectedPointDetails selectedPoint={selectedPoint} />
-            <StatusAlert message={statusMessage} isError={isError} />
-          </div>
+        <main
+          className={`grid grid-cols-1 gap-8 ${
+            !isFullWidth ? "lg:grid-cols-3" : "lg:grid-cols-1"
+          }`}
+        >
+          {!isFullWidth && (
+            <div className="space-y-6 lg:col-span-1">{ControlsSidebar}</div>
+          )}
 
-          <div className="space-y-6 lg:col-span-2">
-            <VisualizationPanel
-              data={fastApiData}
-              isLoading={isPending}
-              colorMode={colorMode}
-              setColorMode={setColorMode}
-              onPointClick={handlePointClick}
-            />
+          <div
+            className={`space-y-6 ${
+              !isFullWidth ? "lg:col-span-2" : "lg:col-span-1"
+            }`}
+          >
+            <div className="relative">
+              <button
+                onClick={toggleFullWidth}
+                title={isFullWidth ? "Collapse View" : "Expand View"}
+                className="absolute right-4 top-4 z-20 rounded-full bg-white/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                {isFullWidth ? (
+                  <ArrowsUpFromLine className="h-5 w-5 text-gray-600" />
+                ) : (
+                  <ArrowDownFromLine className="h-5 w-5 text-gray-600" />
+                )}
+              </button>
+
+              <VisualizationPanel
+                data={fastApiData}
+                isLoading={isPending}
+                colorMode={colorMode}
+                setColorMode={setColorMode}
+                onPointClick={handlePointClick}
+              />
+            </div>
+
+            {isFullWidth && (
+              <div className="space-y-6">{ControlsSidebar}</div>
+            )}
+
             <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="border-b border-gray-200 px-6 py-4">
                 <h2 className="text-lg font-medium text-gray-900">

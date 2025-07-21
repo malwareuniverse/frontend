@@ -130,7 +130,7 @@ export function useVectorPlot({
     interactionModes,
   ]);
 
-  const layout = useMemo<Partial<Layout>>(() => {
+    const layout = useMemo<Partial<Layout>>(() => {
     const baseLayout: Partial<Layout> = {
       autosize: true,
       margin: { l: 20, r: 20, b: 20, t: 40, pad: 4 },
@@ -147,7 +147,7 @@ export function useVectorPlot({
         bgcolor: "rgba(255, 255, 255, 0.9)",
         bordercolor: "#dee2e6",
         borderwidth: 1,
-        font: { size: 10 },
+        font: { size: 14 },
       },
     };
 
@@ -156,6 +156,10 @@ export function useVectorPlot({
         ...baseLayout,
         dragmode: "turntable",
         scene: {
+          uirevision: "true",
+
+          camera: { eye: { x: 1.5, y: 1.5, z: 1.5 } },
+
           xaxis: {
             title: "Comp. 1",
             titlefont: { size: 10, color: "#6c757d" },
@@ -187,8 +191,9 @@ export function useVectorPlot({
       };
     }
 
-    return {
+     return {
       ...baseLayout,
+      uirevision: "true",
       dragmode: "pan",
       xaxis: {
         autorange: false,
