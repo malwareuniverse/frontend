@@ -1,8 +1,9 @@
 'use client';
 
 import type { SetStateAction } from 'react';
-import VectorVisualization, { type SelectedPointInfo } from "~/app/VectorVisualization";
 import type {ProcessedFastAPIData} from "~/interfaces/api";
+import type {SelectedPointInfo} from "~/app/components/VectorVisualization/types";
+import VectorVisualization from "~/app/components/VectorVisualization";
 
 interface VisualizationPanelProps {
   data: ProcessedFastAPIData | null;

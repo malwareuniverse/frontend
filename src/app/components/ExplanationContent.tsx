@@ -9,13 +9,11 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-// Data remains the same
 const workflowSteps: {
   title: string;
   description: string;
   Icon: LucideIcon;
 }[] = [
-  // ... your workflowSteps array ...
   {
     title: "Frontend (You are here)",
     description: "A user selects options like the dimensionality reduction (DR) method (PaCMAP, UMAP, etc.) and clicks 'Fetch Data'.",
