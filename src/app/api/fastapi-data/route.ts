@@ -1,58 +1,40 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "~/env";
 import type { RawApiResponse } from "~/interfaces/malware";
-import type {
-  NextApiResponseError,
-  NextApiResponseSuccess,
-} from "~/interfaces/api";
+import type { NextApiResponseSuccess } from "~/interfaces/api";
+import { handleFastApiErrorResponse, handleInternalErrorResponse } from "~/lib/api-utils";
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const fastapiUrl = new URL("/query_weaviate", env.FASTAPI_URL);
+
+  for (const [key, value] of searchParams.entries()) {
+    fastapiUrl.searchParams.set(key, value);
+  }
+  fastapiUrl.searchParams.set("query", "");
+
+  console.log(`Calling FastAPI endpoint: ${fastapiUrl.toString()}`);
+
   try {
-    const { searchParams } = new URL(request.url);
-    const fastapiUrl = new URL("/query_weaviate", env.FASTAPI_URL);
-
-    for (const [key, value] of searchParams.entries()) {
-      fastapiUrl.searchParams.set(key, value);
-    }
-    fastapiUrl.searchParams.set("query", "");
-    fastapiUrl.searchParams.set("collection_name", "Malware");
-
-    console.log(`Calling FastAPI endpoint: ${fastapiUrl.toString()}`);
     const fastapiResponse = await fetch(fastapiUrl.toString());
 
     if (!fastapiResponse.ok) {
-      const errorBody = await fastapiResponse.text();
-      console.error(
-        `FastAPI fetch failed with status ${fastapiResponse.status}: ${errorBody}`,
-      );
-      return NextResponse.json(
-        {
-          success: false,
-          error: `FastAPI error: ${fastapiResponse.statusText}`,
-        } as NextApiResponseError,
-        { status: fastapiResponse.status },
+      return await handleFastApiErrorResponse(
+        fastapiResponse,
+        "FastAPI weaviate query failed"
       );
     }
 
-    const fastapiData: RawApiResponse =
-      (await fastapiResponse.json()) as RawApiResponse;
-
+    const fastapiData: RawApiResponse = await fastapiResponse.json() as RawApiResponse;
     return NextResponse.json(
       {
         success: true,
         data: fastapiData,
         message: fastapiData.message,
       } as NextApiResponseSuccess,
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
-    console.error("API Route Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: `An unexpected server error occurred: ${error instanceof Error ? error.message : String(error)}`,
-      } as NextApiResponseError,
-      { status: 500 },
-    );
+    return handleInternalErrorResponse(error, "Error in /api/query_weaviate");
   }
 }

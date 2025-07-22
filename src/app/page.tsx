@@ -1,20 +1,31 @@
 "use client";
 
-import { useEffect, useState, type SetStateAction, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  type SetStateAction,
+  useRef,
+  useCallback,
+} from "react";
 import { useMalwareData } from "~/hooks/useMalwareData";
 import { useSmoothScroll } from "~/hooks/useSmoothScroll";
+import { useWeaviateCollections } from "~/hooks/useWeaviateCollections";
 
 import { Accordion } from "./components/Accordion";
 import { ExplanationContent } from "./components/ExplanationContent";
-
 import FetchControls from "./components/FetchControls";
 import SelectedPointDetails from "./components/SelectedPointDetails";
 import StatusAlert from "./components/StatusAlert";
 import VisualizationPanel from "./components/VisualizationPanel";
 import type { SelectedPointInfo } from "~/app/components/VectorVisualization/types";
-import { ArrowsUpFromLine, ArrowDownFromLine } from "lucide-react";
+import {
+  ArrowsUpFromLine,
+  ArrowDownFromLine,
+  ArrowUpDown,
+} from "lucide-react";
 
 export default function FastAPIDataPage() {
+  const [collection, setCollection] = useState<string>("");
   const [applyDR, setApplyDR] = useState<boolean>(true);
   const [drMethod, setDrMethod] = useState<string>("pacmap");
   const [nComponents, setNComponents] = useState<number>(3);
@@ -24,8 +35,14 @@ export default function FastAPIDataPage() {
   const [selectedPoint, setSelectedPoint] = useState<SelectedPointInfo | null>(
     null,
   );
-
   const [isFullWidth, setIsFullWidth] = useState(false);
+  const [isFetchControlsFirst, setIsFetchControlsFirst] = useState(true);
+
+  const {
+    collections: availableCollections,
+    isLoading: isCollectionsLoading,
+    error: collectionsError,
+  } = useWeaviateCollections();
 
   const {
     data: fastApiData,
@@ -39,13 +56,25 @@ export default function FastAPIDataPage() {
   const accordionContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    handleFetchData();
-  }, [applyDR, drMethod, nComponents]);
+    if (availableCollections.length > 0 && !collection) {
+      setCollection(availableCollections[0]!);
+    }
+  }, [availableCollections, collection]);
 
-  const handleFetchData = () => {
+  const handleFetchData = useCallback(() => {
+    if (!collection) {
+      console.warn("Fetch attempt without a selected collection.");
+      return;
+    }
     setSelectedPoint(null);
-    fetchData({ applyDR, drMethod, nComponents });
-  };
+    void fetchData({ collection, applyDR, drMethod, nComponents });
+  }, [applyDR, collection, drMethod, fetchData, nComponents]);
+
+  useEffect(() => {
+    if (collection) {
+      handleFetchData();
+    }
+  }, [collection, applyDR, drMethod, nComponents, handleFetchData]);
 
   const handlePointClick = (info: SetStateAction<SelectedPointInfo | null>) => {
     console.log("Point clicked!", info);
@@ -67,21 +96,64 @@ export default function FastAPIDataPage() {
     setIsFullWidth((prev) => !prev);
   };
 
+  const toggleControlsOrder = () => {
+    setIsFetchControlsFirst((prev) => !prev);
+  };
+
+
+  const fetchControlsComponent = (
+    <FetchControls
+      collection={collection}
+      setCollection={setCollection}
+      availableCollections={availableCollections}
+      isCollectionsLoading={isCollectionsLoading}
+      collectionsError={collectionsError}
+      applyDR={applyDR}
+      setApplyDR={setApplyDR}
+      drMethod={drMethod}
+      setDrMethod={setDrMethod}
+      nComponents={nComponents}
+      setNComponents={setNComponents}
+      isPending={isPending}
+      onFetch={handleFetchData}
+    />
+  );
+
+  const selectedPointComponent = (
+    <SelectedPointDetails selectedPoint={selectedPoint} />
+  );
+
+  const swapButton = (
+    <button
+      onClick={toggleControlsOrder}
+      title="Swap Controls Order"
+      className="absolute right-3 top-3 z-10 rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    >
+      <ArrowUpDown className="h-5 w-5" />
+    </button>
+  );
+
   const ControlsSidebar = (
-    <>
-      <FetchControls
-        applyDR={applyDR}
-        setApplyDR={setApplyDR}
-        drMethod={drMethod}
-        setDrMethod={setDrMethod}
-        nComponents={nComponents}
-        setNComponents={setNComponents}
-        isPending={isPending}
-        onFetch={handleFetchData}
-      />
-      <SelectedPointDetails selectedPoint={selectedPoint} />
+    <div className="space-y-6">
+      {isFetchControlsFirst ? (
+        <>
+          <div className="relative">
+            {swapButton}
+            {fetchControlsComponent}
+          </div>
+          {selectedPointComponent}
+        </>
+      ) : (
+        <>
+          <div className="relative">
+            {swapButton}
+            {selectedPointComponent}
+          </div>
+          {fetchControlsComponent}
+        </>
+      )}
       <StatusAlert message={statusMessage} isError={isError} />
-    </>
+    </div>
   );
 
   return (
@@ -125,7 +197,7 @@ export default function FastAPIDataPage() {
           }`}
         >
           {!isFullWidth && (
-            <div className="space-y-6 lg:col-span-1">{ControlsSidebar}</div>
+            <div className="lg:col-span-1">{ControlsSidebar}</div>
           )}
 
           <div
@@ -156,7 +228,7 @@ export default function FastAPIDataPage() {
             </div>
 
             {isFullWidth && (
-              <div className="space-y-6">{ControlsSidebar}</div>
+              <div className="lg:col-span-1">{ControlsSidebar}</div>
             )}
 
             <div className="overflow-hidden rounded-lg bg-white shadow">
@@ -168,6 +240,7 @@ export default function FastAPIDataPage() {
               <div className="p-6">
                 {!isPending && fastApiData ? (
                   <div className="space-y-4 text-sm">
+                    {fastApiData.collection_name && <p><strong>Collection:</strong> {fastApiData.collection_name}</p>}
                     <p>
                       <strong>Shape:</strong> [{fastApiData.shape.join(", ")}]
                     </p>

@@ -11,12 +11,14 @@ export interface RawApiResponse {
   }[];
   pacmap_applied?: boolean;
   message?: string;
+  collection_name: string,
 }
 
 export interface ProcessedFastAPIData {
   shape: [number, number];
   pacmap_applied: boolean;
   data: number[][];
+  collection_name: string,
   metadata: MalwareMetadata[];
   message: string;
 }
@@ -29,4 +31,9 @@ export interface NextApiResponseSuccess {
 export interface NextApiResponseError {
     success: false;
     error: string;
+    detail?: string;
+}
+
+export interface CollectionsApiResponse {
+  collections: Record<string, string>;
 }
