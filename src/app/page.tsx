@@ -218,7 +218,7 @@ export default function FastAPIDataPage() {
               <button
                 onClick={toggleFullWidth}
                 title={isFullWidth ? "Collapse View" : "Expand View"}
-                className="absolute right-4 top-4 z-20 rounded-full bg-white/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="absolute right-4 top-4 z-20 rounded-full p-3 backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 {isFullWidth ? (
                   <ArrowsUpFromLine className="h-5 w-5 text-gray-600" />

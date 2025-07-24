@@ -8,7 +8,6 @@ import {
 export const HowToUseContent = () => (
   <div className="space-y-4 text-gray-800">
     <ol className="list-inside list-decimal space-y-5">
-      {/* Step 1: Configure */}
       <li className="flex items-start">
         <Settings className="mr-4 mt-1 h-6 w-6 flex-shrink-0 text-indigo-600" />
         <div>
@@ -27,7 +26,6 @@ export const HowToUseContent = () => (
         </div>
       </li>
 
-      {/* Step 2: Interact */}
       <li className="flex items-start">
         <MousePointerClick className="mr-4 mt-1 h-6 w-6 flex-shrink-0 text-indigo-600" />
         <div>
@@ -38,14 +36,13 @@ export const HowToUseContent = () => (
               information.
             </li>
             <li>
-              <strong>Color the data:</strong> Use the "Color By" dropdown to
+              <strong>Color the data:</strong> Use the &#34;Color By&#34; dropdown to
               change groupings.
             </li>
             <li>
               <strong>Filter via legend:</strong> Click categories in the legend
               to isolate or multi-select them. The legend corresponds to the
               current coloring mode:
-              {/* --- NESTED LIST WITH DETAILS ADDED HERE --- */}
               <ul className="mt-2 list-outside list-disc space-y-1 pl-7 text-gray-600">
                 <li>
                   <strong>Component:</strong> Standard heatmap based on vector
@@ -68,7 +65,6 @@ export const HowToUseContent = () => (
         </div>
       </li>
 
-      {/* Step 3: Layout */}
       <li className="flex items-start">
         <Maximize className="mr-4 mt-1 h-6 w-6 flex-shrink-0 text-indigo-600" />
         <div>
