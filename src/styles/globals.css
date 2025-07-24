@@ -4,10 +4,6 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
-/* --- Prettier Plotly Modebar --- */
-
-/* Main container for the modebar */
-/* --- Prettier VERTICAL Plotly Modebar (Corrected) --- */
 
 /* Main container for the modebar */
 .modebar {
@@ -18,20 +14,19 @@
 
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important; /* Cleanly adds space between buttons */
+  gap: 8px !important;
 
   /* Appearance: Modern, clean look */
   background-color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid #dee2e6 !important;
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  padding: 8px !important; /* A bit more padding for a vertical bar */
+  padding: 8px !important;
   transition: opacity 0.2s ease-in-out;
 }
 
-/* THE KEY FIX: Make the groups invisible to the layout engine */
 .modebar-group {
-  display: contents !important; /* This is the magic! */
+  display: contents !important;
 }
 
 /* Individual button styling */
@@ -130,8 +125,6 @@
   stroke: #007bff !important;
   stroke-width: 1.5px !important;
 }
-
-
 
 .legend .scrollbar-track {
   fill: rgba(233, 236, 239, 0.7) !important;

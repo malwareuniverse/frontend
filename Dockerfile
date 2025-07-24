@@ -15,7 +15,6 @@ RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
-ENV COLLECTION="Malware"
 ENV FASTAPI_URL="https://reducer.malwareuniverse.org/"
 ENV NEXT_TELEMETRY_DISABLED=1
 

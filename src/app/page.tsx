@@ -23,6 +23,7 @@ import {
   ArrowDownFromLine,
   ArrowUpDown,
 } from "lucide-react";
+import {HowToUseContent} from "~/app/components/HowToUseContent";
 
 export default function FastAPIDataPage() {
   const [collection, setCollection] = useState<string>("");
@@ -187,7 +188,15 @@ export default function FastAPIDataPage() {
               </Accordion>
             </div>
           </div>
-        </div>
+           <div className="mt-12 flow-root sm:mt-12">
+            <div className="-m-2 rounded-xl bg-white/70 p-2 ring-1 ring-gray-900/10 backdrop-blur-lg ring-inset lg:-m-4 lg:rounded-2xl lg:p-4">
+             <Accordion title="How to Use It">
+                <HowToUseContent />
+              </Accordion>
+            </div>
+          </div>
+         </div>
+
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
