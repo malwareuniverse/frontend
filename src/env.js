@@ -8,7 +8,6 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
-    COLLECTION: z.string(),
     FASTAPI_URL: z.string().url(),
   },
 
@@ -27,7 +26,6 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    COLLECTION: process.env.COLLECTION,
     FASTAPI_URL: process.env.FASTAPI_URL,
   },
   /**
