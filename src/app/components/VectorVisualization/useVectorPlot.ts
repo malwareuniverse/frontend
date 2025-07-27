@@ -157,9 +157,6 @@ export function useVectorPlot({
         dragmode: "turntable",
         scene: {
           uirevision: "true",
-
-          camera: { eye: { x: 1.5, y: 1.5, z: 1.5 } },
-
           xaxis: {
             title: "Comp. 1",
             titlefont: { size: 10, color: "#6c757d" },
@@ -194,7 +191,6 @@ export function useVectorPlot({
      return {
       ...baseLayout,
       uirevision: "true",
-      dragmode: "pan",
       xaxis: {
         autorange: false,
         range: axisRanges?.x,
