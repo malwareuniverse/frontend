@@ -1,4 +1,4 @@
-FROM node:24-alpine AS builder
+FROM node:25-alpine AS builder
 
 # Non-root User erstellen
 RUN addgroup --system --gid 1001 nodejs
@@ -20,7 +20,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 
 # System Updates und nur notwendige Pakete
 RUN apk update && apk upgrade && apk add --no-cache dumb-init && rm -rf /var/cache/apk/*
