@@ -24,7 +24,7 @@
     "next": "15.3.3",
     "plotly.js": "^3.0.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.2.1",
     "react-plotly.js": "^2.6.0",
     "zod": "^3.24.2"
   },
@@ -34,7 +34,7 @@
     "@types/d3-scale": "^4.0.9",
     "@types/node": "^20.14.10",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react-dom": "^19.2.3",
     "@types/react-plotly.js": "^2.6.3",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
