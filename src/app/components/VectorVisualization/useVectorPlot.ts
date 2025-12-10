@@ -93,7 +93,7 @@ export function useVectorPlot({
     if (dimension === 0) return `Data is not in a plottable 2D/3D format.`;
 
     const isIsolateMode = interactionModes[colorBy] === "isolate";
-    if (isIsolateMode && isolatedItem && colorBy === isolatedItem.type) {
+    if (isIsolateMode && isolatedItem?.type === colorBy) {
       if (isolatedItem.type === "family") {
         const familyName =
           metadata.find(

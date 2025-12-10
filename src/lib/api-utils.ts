@@ -27,7 +27,7 @@ export async function handleFastApiErrorResponse(
     } else {
       errorMessage = JSON.stringify(bodyJson);
     }
-  } catch (e) {
+  } catch {
     const textBody = await response.text();
     errorMessage = textBody.substring(0, 200);
     errorDetails = textBody;
