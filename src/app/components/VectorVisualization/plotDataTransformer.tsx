@@ -168,12 +168,14 @@ export function generatePlotlyData({
           color: data.map((p) => p[0]),
           colorscale: "Viridis",
           colorbar: {
-            title: "Component 1",
+            title: {
+              text: "Component 1",
+              font: { size: 10 },
+            },
+            tickfont: { size: 8 },
             thickness: 15,
             len: 0.75,
             y: 0.5,
-            titlefont: { size: 10 },
-            tickfont: { size: 8 },
           },
         },
         ...commonHoverProps,

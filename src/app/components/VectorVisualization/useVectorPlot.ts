@@ -158,8 +158,10 @@ export function useVectorPlot({
         scene: {
           uirevision: "true",
           xaxis: {
-            title: "Comp. 1",
-            titlefont: { size: 10, color: "#6c757d" },
+            title: {
+              title: "Comp. 1",
+              font: { size: 10, color: "#6c757d" },
+            },
             gridcolor: "#dee2e6",
             zerolinecolor: "#adb5bd",
             showbackground: false,
@@ -167,8 +169,10 @@ export function useVectorPlot({
             range: axisRanges?.x,
           },
           yaxis: {
-            title: "Comp. 2",
-            titlefont: { size: 10, color: "#6c757d" },
+            title: {
+              title: "Comp. 2",
+              font: { size: 10, color: "#6c757d" },
+            },
             gridcolor: "#dee2e6",
             zerolinecolor: "#adb5bd",
             showbackground: false,
@@ -176,8 +180,10 @@ export function useVectorPlot({
             range: axisRanges?.y,
           },
           zaxis: {
-            title: "Comp. 3",
-            titlefont: { size: 10, color: "#6c757d" },
+            title: {
+              title: "Comp. 3",
+              font: { size: 10, color: "#6c757d" },
+            },
             gridcolor: "#dee2e6",
             zerolinecolor: "#adb5bd",
             showbackground: false,
