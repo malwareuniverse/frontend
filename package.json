@@ -32,7 +32,7 @@
     "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/d3-scale": "^4.0.9",
-    "@types/node": "^24.10.2",
+    "@types/node": "^25.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.2.3",
     "@types/react-plotly.js": "^2.6.3",
