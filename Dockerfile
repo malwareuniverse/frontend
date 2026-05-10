@@ -1,53 +1,18 @@
-FROM node:25-alpine AS builder
-
-# Non-root User erstellen
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
+FROM docker.io/node:25-alpine AS build
 WORKDIR /app
+COPY .env /app/.env
 
-COPY package.json package-lock.json* ./
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install
 
-RUN npm ci && npm cache clean --force
-
-COPY --chown=nextjs:nodejs . .
-RUN chown -R nextjs:nodejs /app
-
-USER nextjs
-
-ENV FASTAPI_URL="https://reducer.malwareuniverse.org/"
-ENV NEXT_TELEMETRY_DISABLED=1
-
+COPY . /app
 RUN npm run build
 
-FROM node:25-alpine AS runner
+# production environment
+FROM docker.io/nginx:1.29.7-alpine-slim
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-# System Updates und nur notwendige Pakete
-RUN apk update && apk upgrade && apk add --no-cache dumb-init && rm -rf /var/cache/apk/*
-
-# Non-root User erstellen
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-WORKDIR /app
-
-# Nur Production Dependencies kopieren
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production && npm cache clean --force && rm -rf /tmp/*
-
-# Built Application von Builder Stage kopieren
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-
-# Read-only Root Filesystem vorbereiten
-RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next/cache
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV NODE_ENV=production
-
-
-CMD ["node", "server.js"]
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

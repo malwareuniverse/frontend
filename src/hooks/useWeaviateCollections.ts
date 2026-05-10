@@ -1,4 +1,4 @@
-'use client';
+
 
 import { useState, useEffect } from 'react';
 import type { CollectionsApiResponse } from '~/interfaces/api';
@@ -13,8 +13,13 @@ export function useWeaviateCollections() {
       setIsLoading(true);
       setError(null);
       try {
-        const apiUrl = new URL('/api/weaviate-collections', window.location.origin);
-        const response = await fetch(apiUrl.toString());
+        const apiBase = import.meta.env.DEV ? "/api" : (import.meta.env.VITE_FASTAPI_URL || "");
+        
+        const finalUrl = (!import.meta.env.DEV && import.meta.env.VITE_FASTAPI_URL?.startsWith('http'))
+          ? new URL("/weaviate_collections", import.meta.env.VITE_FASTAPI_URL)
+          : new URL(`${apiBase}/weaviate_collections`.replace(/\/+/g, '/'), window.location.origin);
+
+        const response = await fetch(finalUrl.toString());
 
         if (!response.ok) {
           const errorText = await response.text();

@@ -2,7 +2,7 @@
 
 # 📊 Malwareuniverse Visualization
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-teal)
+![React](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-teal)
 
 An interactive web application for analyzing and visualizing malware embeddings using advanced dimensionality reduction techniques.
 
@@ -47,7 +47,6 @@ Detailed view showing:
 
 ## 📦 Tech Stack
 
-- **Next.js 15** - React framework with App Router
 - **React 19** - UI library
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first CSS framework
