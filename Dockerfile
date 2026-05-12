@@ -10,7 +10,7 @@ COPY . /app
 RUN npm run build
 
 # production environment
-FROM docker.io/nginx:1.29.7-alpine-slim
+FROM docker.io/nginx:1.29.8-alpine-slim
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
