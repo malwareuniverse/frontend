@@ -1,4 +1,4 @@
-FROM docker.io/node:25-alpine AS build
+FROM docker.io/node:26-alpine AS build
 WORKDIR /app
 COPY .env /app/.env
 
