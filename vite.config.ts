@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
         '~': path.resolve(__dirname, './src'),
       },
     },
+    optimizeDeps: {
+      include: ['react-plotly.js', 'plotly.js'],
+    },
     server: {
       proxy: {
         '/api': {

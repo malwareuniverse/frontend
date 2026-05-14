@@ -1,12 +1,28 @@
-import React, { lazy, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useVectorPlot } from "./useVectorPlot";
 import PlotHeader from "./PlotHeader";
 import PlotPlaceholder from "./PlotPlaceholder";
 import type { VectorVisualizationProps } from "./types";
 
-const Plot = lazy(() => import("react-plotly.js"));
-
 export default function VectorVisualization(props: VectorVisualizationProps) {
+  const [PlotComponent, setPlotComponent] = useState<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    import("react-plotly.js")
+      .then((mod) => {
+        if (isMounted) {
+          const ResolvedPlot = mod.default?.default || mod.default || mod;
+          setPlotComponent(() => ResolvedPlot);
+        }
+      })
+      .catch((err) => console.error("Failed to load Plotly:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const {
     plotlyData,
     layout,
@@ -32,13 +48,15 @@ export default function VectorVisualization(props: VectorVisualizationProps) {
         onInteractionToggle={
           isToggleable
             ? () =>
-                handleInteractionToggle(props.colorBy as "family" | "cluster")
+              handleInteractionToggle(props.colorBy as "family" | "cluster")
             : undefined
         }
       />
       <div className="w-full flex-grow">
-        <Suspense fallback={<PlotPlaceholder statusMessage={statusMessage} />}>
-          <Plot
+        {!PlotComponent ? (
+          <PlotPlaceholder statusMessage="Loading plotting library..." />
+        ) : (
+          <PlotComponent
             data={plotlyData}
             onClick={handleClick}
             onLegendClick={handleLegendClick}
@@ -47,7 +65,7 @@ export default function VectorVisualization(props: VectorVisualizationProps) {
             config={{ displayModeBar: true, responsive: true, displaylogo: false }}
             useResizeHandler={true}
           />
-        </Suspense>
+        )}
       </div>
     </div>
   );
