@@ -18,7 +18,7 @@
     "d3-scale": "^4.0.2",
     "lucide-react": "^1.17.0",
     "plotly.js": "^3.6.0",
-    "react": "^19.2.4",
+    "react": "^19.2.7",
     "react-dom": "^19.2.6",
     "react-plotly.js": "^2.6.0",
     "zod": "^4.4.3"
@@ -29,7 +29,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "@types/d3-scale": "^4.0.9",
     "@types/node": "^25.9.2",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/react-plotly.js": "^2.6.4",
     "@vitejs/plugin-react": "^6.0.2",
