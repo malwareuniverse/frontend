@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -140,4 +142,48 @@
 
 .legend .scrollbar-thumb:hover {
   fill: #868e96 !important;
+}
+
+/* Dark mode overrides for Plotly modebar and legend */
+.dark .modebar {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .modebar-btn .icon path {
+  fill: #94a3b8 !important;
+}
+
+.dark .modebar-btn:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .legend .bg {
+  fill: rgba(15, 23, 42, 0.95) !important;
+  stroke: #334155 !important;
+}
+
+.dark .legendtext {
+  fill: #cbd5e1 !important;
+}
+
+.dark .legendtoggle:hover .legendhitbox {
+  fill: rgba(30, 41, 59, 0.7) !important;
+}
+
+.dark .legendtoggle[style*="opacity: 0.5"] .legendtext {
+  fill: #64748b !important;
+}
+
+.dark .scrollbar-track {
+  fill: rgba(30, 41, 59, 0.7) !important;
+}
+
+.dark .scrollbar-thumb {
+  fill: #475569 !important;
+}
+
+.dark .scrollbar-thumb:hover {
+  fill: #64748b !important;
 }

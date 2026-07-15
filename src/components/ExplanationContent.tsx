@@ -52,14 +52,14 @@ export function ExplanationContent() {
     <div className="space-y-8">
       {/* Section 1: What this App Does (Unchanged) */}
       <div className="flex items-start gap-4">
-        <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+        <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
           <Info className="h-5 w-5" />
         </div>
         <div>
-          <h4 className="text-base font-semibold text-gray-800">
+          <h4 className="text-base font-semibold text-gray-800 dark:text-slate-100">
             What This App Does
           </h4>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-350">
             This application is an interactive visualizer for malware analysis. It helps security analysts identify clusters, discover new malware families, and spot anomalies by visualizing high-dimensional data in 2D or 3D.
           </p>
         </div>
@@ -67,21 +67,21 @@ export function ExplanationContent() {
 
       {/* Section 2: How It Works (The Fix) */}
       <div>
-        <h4 className="mb-4 text-base font-semibold text-gray-800">
+        <h4 className="mb-4 text-base font-semibold text-gray-800 dark:text-slate-100">
           Steps it takes
         </h4>
         {/* We keep the timeline on the parent, but remove the broken space-y */}
-        <div className="border-l-2 border-gray-200">
+        <div className="border-l-2 border-gray-200 dark:border-slate-800">
           {workflowSteps.map((step, index) => (
             // 1. The container for EACH step is now the relative parent
             <div key={index} className="relative flex items-start gap-4">
               {/* 2. We use padding for spacing, not margin. This makes the relative container taller. */}
               {/* We add padding-left to the content, and padding-bottom to create the space. */}
               <div className="flex-grow pl-4 pb-8">
-                <h5 className="font-semibold text-gray-800">{step.title}</h5>
-                <p className="mt-1 text-sm text-gray-600">{step.description}</p>
+                <h5 className="font-semibold text-gray-800 dark:text-slate-100">{step.title}</h5>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-350">{step.description}</p>
               </div>
-               <div className="absolute -left-1 top-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white"></div>
+               <div className="absolute -left-1 top-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-slate-900"></div>
 
             </div>
           ))}

@@ -14,6 +14,7 @@ export function useVectorPlot({
   isLoading,
   colorBy,
   onPointClick,
+  isDarkMode = false,
 }: VectorVisualizationProps) {
   const [traceVisibility, setTraceVisibility] = useState<
     TraceVisibilityInfo[] | null
@@ -135,8 +136,8 @@ export function useVectorPlot({
       autosize: true,
       margin: { l: 20, r: 20, b: 20, t: 40, pad: 4 },
       paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "#f8f9fa",
-      font: { family: "sans-serif", color: "#343a40" },
+      plot_bgcolor: isDarkMode ? "#1e293b" : "#f8f9fa",
+      font: { family: "sans-serif", color: isDarkMode ? "#f1f5f9" : "#343a40" },
       hovermode: "closest",
       showlegend: colorBy !== "component",
       legend: {
@@ -144,10 +145,10 @@ export function useVectorPlot({
         y: 1,
         xanchor: "right",
         yanchor: "top",
-        bgcolor: "rgba(255, 255, 255, 0.9)",
-        bordercolor: "#dee2e6",
+        bgcolor: isDarkMode ? "rgba(30, 41, 59, 0.9)" : "rgba(255, 255, 255, 0.9)",
+        bordercolor: isDarkMode ? "#334155" : "#dee2e6",
         borderwidth: 1,
-        font: { size: 14 },
+        font: { size: 14, color: isDarkMode ? "#cbd5e1" : "#495057" },
       },
     };
 
@@ -159,27 +160,27 @@ export function useVectorPlot({
           uirevision: "true",
           xaxis: {
             title: "Comp. 1",
-            titlefont: { size: 10, color: "#6c757d" },
-            gridcolor: "#dee2e6",
-            zerolinecolor: "#adb5bd",
+            titlefont: { size: 10, color: isDarkMode ? "#94a3b8" : "#6c757d" },
+            gridcolor: isDarkMode ? "#334155" : "#dee2e6",
+            zerolinecolor: isDarkMode ? "#475569" : "#adb5bd",
             showbackground: false,
             autorange: false,
             range: axisRanges?.x,
           },
           yaxis: {
             title: "Comp. 2",
-            titlefont: { size: 10, color: "#6c757d" },
-            gridcolor: "#dee2e6",
-            zerolinecolor: "#adb5bd",
+            titlefont: { size: 10, color: isDarkMode ? "#94a3b8" : "#6c757d" },
+            gridcolor: isDarkMode ? "#334155" : "#dee2e6",
+            zerolinecolor: isDarkMode ? "#475569" : "#adb5bd",
             showbackground: false,
             autorange: false,
             range: axisRanges?.y,
           },
           zaxis: {
             title: "Comp. 3",
-            titlefont: { size: 10, color: "#6c757d" },
-            gridcolor: "#dee2e6",
-            zerolinecolor: "#adb5bd",
+            titlefont: { size: 10, color: isDarkMode ? "#94a3b8" : "#6c757d" },
+            gridcolor: isDarkMode ? "#334155" : "#dee2e6",
+            zerolinecolor: isDarkMode ? "#475569" : "#adb5bd",
             showbackground: false,
             autorange: false,
             range: axisRanges?.z,
@@ -194,17 +195,17 @@ export function useVectorPlot({
       xaxis: {
         autorange: false,
         range: axisRanges?.x,
-        gridcolor: "#dee2e6",
-        zerolinecolor: "#adb5bd",
+        gridcolor: isDarkMode ? "#334155" : "#dee2e6",
+        zerolinecolor: isDarkMode ? "#475569" : "#adb5bd",
       },
       yaxis: {
         autorange: false,
         range: axisRanges?.y,
-        gridcolor: "#dee2e6",
-        zerolinecolor: "#adb5bd",
+        gridcolor: isDarkMode ? "#334155" : "#dee2e6",
+        zerolinecolor: isDarkMode ? "#475569" : "#adb5bd",
       },
     };
-  }, [colorBy, dimension, axisRanges]);
+  }, [colorBy, dimension, axisRanges, isDarkMode]);
 
   const handleClick = (event: Readonly<PlotMouseEvent>) => {
     if (event.points.length > 0) {

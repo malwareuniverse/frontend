@@ -38,8 +38,8 @@ export default function FetchControls({
   onFetch,
 }: FetchControlsProps) {
   return (
-    <div className="space-y-6 rounded-lg bg-white p-6 shadow">
-      <h2 className="text-lg font-medium text-gray-900">Fetch Options</h2>
+    <div className="space-y-6 rounded-lg bg-white dark:bg-slate-800 p-6 shadow border border-transparent dark:border-slate-700/50">
+      <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100">Fetch Options</h2>
 
       <div className="space-y-1">
         <Listbox
@@ -47,11 +47,11 @@ export default function FetchControls({
           onChange={setCollection}
           disabled={isCollectionsLoading || isPending || !!collectionsError}
         >
-          <Listbox.Label className="block text-sm font-medium text-gray-700">
+          <Listbox.Label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
             Data Collection
           </Listbox.Label>
           <div className="relative mt-1">
-            <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm disabled:cursor-not-allowed disabled:bg-gray-200 disabled:opacity-70">
+            <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm disabled:cursor-not-allowed disabled:bg-gray-200 dark:disabled:bg-slate-800 disabled:opacity-70">
               <span className="block truncate">
                 {isCollectionsLoading
                   ? "Loading collections..."
@@ -74,13 +74,13 @@ export default function FetchControls({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+              <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-slate-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-slate-600 focus:outline-none sm:text-sm">
                 {availableCollections.map((col) => (
                   <Listbox.Option
                     key={col}
                     className={({ active  }) =>
                       `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                        active ? "bg-blue-100 text-blue-900" : "text-gray-900"
+                        active ? "bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-100" : "text-gray-900 dark:text-slate-100"
                       }`
                     }
                     value={col}
@@ -95,7 +95,7 @@ export default function FetchControls({
                           {col}
                         </span>
                         {selected ? (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
                             <CheckIcon className="h-5 w-5" aria-hidden="true" />
                           </span>
                         ) : null}
@@ -120,46 +120,46 @@ export default function FetchControls({
           checked={applyDR}
           onChange={(e) => setApplyDR(e.target.checked)}
           disabled={isPending}
-          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
         />
-        <label htmlFor="apply_dr" className="ml-2 block text-sm text-gray-900">
+        <label htmlFor="apply_dr" className="ml-2 block text-sm text-gray-700 dark:text-slate-300">
           Apply Dimensionality Reduction
         </label>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center">
-          <input id="apply_pacmap" type="radio" name="dr_method" value="pacmap" checked={drMethod === 'pacmap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <label htmlFor="apply_pacmap" className="ml-2 block text-sm text-gray-900">PaCMAP</label>
+          <input id="apply_pacmap" type="radio" name="dr_method" value="pacmap" checked={drMethod === 'pacmap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500" />
+          <label htmlFor="apply_pacmap" className="ml-2 block text-sm text-gray-900 dark:text-slate-300">PaCMAP</label>
         </div>
         <div className="flex items-center">
-          <input id="apply_umap" type="radio" name="dr_method" value="umap" checked={drMethod === 'umap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <label htmlFor="apply_umap" className="ml-2 block text-sm text-gray-900">UMAP</label>
+          <input id="apply_umap" type="radio" name="dr_method" value="umap" checked={drMethod === 'umap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500" />
+          <label htmlFor="apply_umap" className="ml-2 block text-sm text-gray-900 dark:text-slate-300">UMAP</label>
         </div>
         <div className="flex items-center">
-          <input id="apply_trimap" type="radio" name="dr_method" value="trimap" checked={drMethod === 'trimap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <label htmlFor="apply_trimap" className="ml-2 block text-sm text-gray-900">TriMAP</label>
+          <input id="apply_trimap" type="radio" name="dr_method" value="trimap" checked={drMethod === 'trimap'} onChange={(e) => setDrMethod(e.target.value)} disabled={isPending || !applyDR} className="h-4 w-4 border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500" />
+          <label htmlFor="apply_trimap" className="ml-2 block text-sm text-gray-900 dark:text-slate-300">TriMAP</label>
         </div>
       </div>
 
 
       {applyDR && (
         <div className="mt-3">
-          <label className="mb-2 block text-sm font-medium text-gray-700">Visualization Dimensions</label>
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Visualization Dimensions</label>
           <div className="flex space-x-4">
             <div className="flex items-center">
-              <input id="pacmap_components_2" type="radio" name="pacmap_components" value="2" checked={nComponents === 2} onChange={() => setNComponents(2)} disabled={isPending} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              <label htmlFor="pacmap_components_2" className="ml-2 block text-sm text-gray-700">2D</label>
+              <input id="pacmap_components_2" type="radio" name="pacmap_components" value="2" checked={nComponents === 2} onChange={() => setNComponents(2)} disabled={isPending} className="h-4 w-4 border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500" />
+              <label htmlFor="pacmap_components_2" className="ml-2 block text-sm text-gray-700 dark:text-slate-300">2D</label>
             </div>
             <div className="flex items-center">
-              <input id="pacmap_components_3" type="radio" name="pacmap_components" value="3" checked={nComponents === 3} onChange={() => setNComponents(3)} disabled={isPending} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-              <label htmlFor="pacmap_components_3" className="ml-2 block text-sm text-gray-700">3D</label>
+              <input id="pacmap_components_3" type="radio" name="pacmap_components" value="3" checked={nComponents === 3} onChange={() => setNComponents(3)} disabled={isPending} className="h-4 w-4 border-gray-300 dark:border-slate-600 dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500" />
+              <label htmlFor="pacmap_components_3" className="ml-2 block text-sm text-gray-700 dark:text-slate-300">3D</label>
             </div>
           </div>
         </div>
       )}
 
-      <button onClick={onFetch} disabled={isPending || isCollectionsLoading || !!collectionsError} className="flex w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300">
+      <button onClick={onFetch} disabled={isPending || isCollectionsLoading || !!collectionsError} className="flex w-full items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 px-4 py-2 font-medium text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:bg-blue-300 dark:disabled:bg-blue-950/40 dark:disabled:text-slate-500">
         {isPending ? (
           <><svg className="mr-2 -ml-1 h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Loading...</>
         ) : (

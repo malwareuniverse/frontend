@@ -8,6 +8,7 @@ export interface VectorVisualizationProps {
   isLoading: boolean;
   colorBy: "component" | "family" | "cluster" | "reporter";
   onPointClick: (info: SelectedPointInfo | null) => void;
+  isDarkMode?: boolean;
 }
 
 export interface SelectedPointInfo {

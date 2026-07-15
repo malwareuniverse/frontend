@@ -22,10 +22,14 @@ import {
   ArrowsUpFromLine,
   ArrowDownFromLine,
   ArrowUpDown,
+  Sun,
+  Moon,
 } from "lucide-react";
 import {HowToUseContent} from "~/components/HowToUseContent";
+import { useDarkMode } from "~/hooks/useDarkMode";
 
 export default function FastAPIDataPage() {
+  const { isDark, toggleDarkMode } = useDarkMode();
   const [collection, setCollection] = useState<string>("");
   const [applyDR, setApplyDR] = useState<boolean>(true);
   const [drMethod, setDrMethod] = useState<string>("pacmap");
@@ -128,7 +132,7 @@ export default function FastAPIDataPage() {
     <button
       onClick={toggleControlsOrder}
       title="Swap Controls Order"
-      className="absolute right-3 top-3 z-10 rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className="absolute right-3 top-3 z-10 rounded-full p-1.5 text-gray-500 dark:text-slate-400 transition hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-700 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     >
       <ArrowUpDown className="h-5 w-5" />
     </button>
@@ -158,21 +162,32 @@ export default function FastAPIDataPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="relative isolate overflow-hidden bg-gradient-to-b from-indigo-100/20 via-white to-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      <header className="relative isolate overflow-hidden bg-gradient-to-b from-indigo-100/20 via-white to-white dark:from-indigo-950/10 dark:via-slate-900 dark:to-slate-900 bg-slate-50 dark:bg-slate-950">
+        {/* Theme Toggle Button */}
+        <div className="absolute right-6 top-6 z-30">
+          <button
+            onClick={toggleDarkMode}
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            className="flex items-center justify-center rounded-full p-2.5 bg-white/80 dark:bg-slate-800/80 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {isDark ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-600" />}
+          </button>
+        </div>
+
         <div
-          className="absolute inset-y-0 right-1/2 -z-10 -mr-96 w-[200%] origin-top-right skew-x-[-30deg] bg-white shadow-xl ring-1 shadow-indigo-600/10 ring-indigo-50 sm:-mr-80 lg:-mr-96"
+          className="absolute inset-y-0 right-1/2 -z-10 -mr-96 w-[200%] origin-top-right skew-x-[-30deg] bg-white dark:bg-slate-900 shadow-xl ring-1 shadow-indigo-600/10 dark:shadow-indigo-950/20 ring-indigo-50 dark:ring-indigo-950 sm:-mr-80 lg:-mr-96"
           aria-hidden="true"
         />
         <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
                 Malwareuniverse
               </span>{" "}
               Vector Visualizer
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
+            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-slate-300">
               An interactive tool to analyze malware embeddings.
             </p>
           </div>
@@ -180,7 +195,7 @@ export default function FastAPIDataPage() {
           <div className="mt-16 flow-root sm:mt-24">
             <div
               ref={accordionContainerRef}
-              className="-m-2 rounded-xl bg-white/70 p-2 ring-1 ring-gray-900/10 backdrop-blur-lg ring-inset lg:-m-4 lg:rounded-2xl lg:p-4"
+              className="-m-2 rounded-xl bg-white/70 dark:bg-slate-800/40 p-2 ring-1 ring-gray-900/10 dark:ring-white/10 backdrop-blur-lg ring-inset lg:-m-4 lg:rounded-2xl lg:p-4"
             >
               <Accordion title="How It Works" onToggle={handleAccordionToggle}>
                 <ExplanationContent />
@@ -188,14 +203,13 @@ export default function FastAPIDataPage() {
             </div>
           </div>
            <div className="mt-12 flow-root sm:mt-12">
-            <div className="-m-2 rounded-xl bg-white/70 p-2 ring-1 ring-gray-900/10 backdrop-blur-lg ring-inset lg:-m-4 lg:rounded-2xl lg:p-4">
+            <div className="-m-2 rounded-xl bg-white/70 dark:bg-slate-800/40 p-2 ring-1 ring-gray-900/10 dark:ring-white/10 backdrop-blur-lg ring-inset lg:-m-4 lg:rounded-2xl lg:p-4">
              <Accordion title="How to Use It">
                 <HowToUseContent />
               </Accordion>
             </div>
           </div>
          </div>
-
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -217,12 +231,12 @@ export default function FastAPIDataPage() {
               <button
                 onClick={toggleFullWidth}
                 title={isFullWidth ? "Collapse View" : "Expand View"}
-                className="absolute right-4 top-4 z-20 rounded-full p-3 backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="absolute right-4 top-4 z-20 rounded-full p-3 backdrop-blur-sm bg-white/20 dark:bg-slate-800/20 hover:bg-white dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-white border border-transparent dark:border-slate-700/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {isFullWidth ? (
-                  <ArrowsUpFromLine className="h-5 w-5 text-gray-600" />
+                  <ArrowsUpFromLine className="h-5 w-5" />
                 ) : (
-                  <ArrowDownFromLine className="h-5 w-5 text-gray-600" />
+                  <ArrowDownFromLine className="h-5 w-5" />
                 )}
               </button>
 
@@ -232,6 +246,7 @@ export default function FastAPIDataPage() {
                 colorMode={colorMode}
                 setColorMode={setColorMode}
                 onPointClick={handlePointClick}
+                isDarkMode={isDark}
               />
             </div>
 
@@ -239,15 +254,15 @@ export default function FastAPIDataPage() {
               <div className="lg:col-span-1">{ControlsSidebar}</div>
             )}
 
-            <div className="overflow-hidden rounded-lg bg-white shadow">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-lg font-medium text-gray-900">
+            <div className="overflow-hidden rounded-lg bg-white dark:bg-slate-800 border border-transparent dark:border-slate-700/50 shadow">
+              <div className="border-b border-gray-200 dark:border-slate-700 px-6 py-4">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100">
                   FastAPI Response Details
                 </h2>
               </div>
               <div className="p-6">
                 {!isPending && fastApiData ? (
-                  <div className="space-y-4 text-sm">
+                  <div className="space-y-4 text-sm text-gray-700 dark:text-slate-200">
                     {fastApiData.collection_name && <p><strong>Collection:</strong> {fastApiData.collection_name}</p>}
                     <p>
                       <strong>Shape:</strong> [{fastApiData.shape.join(", ")}]
@@ -261,7 +276,7 @@ export default function FastAPIDataPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="text-center text-sm text-gray-500">
+                  <div className="text-center text-sm text-gray-500 dark:text-slate-400">
                     {isPending
                       ? "Loading response details..."
                       : "Fetch data to see response details here."}
