@@ -16,7 +16,7 @@
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
     "d3-scale": "^4.0.2",
-    "lucide-react": "^1.17.0",
+    "lucide-react": "^1.24.0",
     "plotly.js": "^3.6.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
