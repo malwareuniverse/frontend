@@ -18,7 +18,7 @@
     "d3-scale": "^4.0.2",
     "lucide-react": "^1.24.0",
     "plotly.js": "^3.7.0",
-    "react": "^19.2.7",
+    "react": "^19.2.8",
     "react-dom": "^19.2.7",
     "react-plotly.js": "^4.0.0",
     "zod": "^4.4.3"
