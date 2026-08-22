@@ -33,7 +33,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-plotly.js": "^2.6.4",
     "@vitejs/plugin-react": "^6.0.5",
-    "eslint": "^10.5.0",
+    "eslint": "^10.8.1",
     "postcss": "^8.5.19",
     "prettier": "^3.8.4",
     "prettier-plugin-tailwindcss": "^0.8.1",
