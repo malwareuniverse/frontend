@@ -9,7 +9,7 @@ updates:
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
